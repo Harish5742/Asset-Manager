@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { Sprout, MapPin, Droplets, FlaskConical, Loader2, Navigation, Thermometer, Wind, CheckCircle2 } from "lucide-react";
 
 import { useAnalyzeSoil } from "@workspace/api-client-react";
 import { useResultStore } from "@/hooks/use-result-store";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage, getLanguageFromLocation } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 
 import { Button } from "@/components/ui/button";
@@ -75,7 +75,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { setResult } = useResultStore();
   const analyzeSoil = useAnalyzeSoil();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const geo = useGeolocation();
 
   const form = useForm<FormValues>({
@@ -94,6 +94,25 @@ export default function Home() {
     },
   });
 
+  const watchedLocation = useWatch({ control: form.control, name: "location" });
+  const locationLang = geo.data?.state
+    ? getLanguageFromLocation(geo.data.state)
+    : getLanguageFromLocation(watchedLocation ?? "");
+
+  const LANG_DISPLAY: Record<string, string> = {
+    ta: "Tamil · தமிழ்",
+    hi: "Hindi · हिंदी",
+    te: "Telugu · తెలుగు",
+    kn: "Kannada · ಕನ್ನಡ",
+    ml: "Malayalam · മലയാളം",
+    bn: "Bengali · বাংলা",
+    mr: "Marathi · मराठी",
+    gu: "Gujarati · ગુજરાતી",
+    pa: "Punjabi · ਪੰਜਾਬੀ",
+    or: "Odia · ଓଡ଼ିଆ",
+    en: "English",
+  };
+
   async function handleDetectLocation() {
     const data = await geo.detect();
     if (data) {
@@ -102,11 +121,15 @@ export default function Home() {
   }
 
   function onSubmit(values: FormValues) {
+    const locationLang = geo.data?.state
+      ? getLanguageFromLocation(geo.data.state)
+      : getLanguageFromLocation(values.location);
+
     analyzeSoil.mutate(
       {
         data: {
           ...values,
-          language: lang,
+          language: locationLang,
           latitude: geo.data?.latitude ?? undefined,
           longitude: geo.data?.longitude ?? undefined,
           temperature: geo.data?.temperature ?? undefined,
@@ -405,9 +428,9 @@ export default function Home() {
               </div>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                {lang !== "en" && (
-                  <Badge variant="outline" className="text-xs text-muted-foreground">
-                    {t.detectedLanguage}: {t.appSubtitle !== "Soil Health Advisor" ? t.appSubtitle.split(" ")[0] : lang.toUpperCase()}
+                {locationLang !== "en" && (
+                  <Badge variant="outline" className="text-xs text-muted-foreground border-primary/30 bg-primary/5 text-primary">
+                    📍 {t.detectedLanguage}: {LANG_DISPLAY[locationLang] ?? locationLang.toUpperCase()}
                   </Badge>
                 )}
                 <Button

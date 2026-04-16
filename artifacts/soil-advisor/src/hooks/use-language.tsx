@@ -841,3 +841,141 @@ export function useLanguage() {
 }
 
 export { translations };
+
+const LOCATION_LANG_KEYWORDS: Array<{ keywords: string[]; lang: LangCode }> = [
+  {
+    lang: "ta",
+    keywords: [
+      "tamil nadu", "tamilnadu",
+      "chennai", "madras", "coimbatore", "madurai", "salem", "trichy", "tiruchirappalli",
+      "erode", "tirunelveli", "vellore", "tiruppur", "dindigul", "thanjavur", "tanjore",
+      "cuddalore", "nagapattinam", "kumbakonam", "nagercoil", "kanyakumari",
+      "pudukkottai", "sivaganga", "virudhunagar", "ramanathapuram", "tuticorin", "thoothukudi",
+      "dharmapuri", "krishnagiri", "karur", "ariyalur", "perambalur", "villupuram",
+      "namakkal", "ooty", "udhagamandalam", "pollachi", "hosur",
+    ],
+  },
+  {
+    lang: "kn",
+    keywords: [
+      "karnataka",
+      "bangalore", "bengaluru", "mysore", "mysuru", "hubli", "dharwad", "mangalore",
+      "mangaluru", "belgaum", "belagavi", "gulbarga", "kalaburagi", "tumkur", "tumakuru",
+      "bidar", "bellary", "ballari", "raichur", "davangere", "shimoga", "shivamogga",
+      "hassan", "mandya", "chickmagalur", "chikkamagaluru", "udupi", "kodagu", "coorg",
+      "kolar", "chitradurga", "bijapur", "vijayapura", "bagalkot", "gadag", "koppal",
+      "yadgir", "chamarajanagar", "chikkaballapur", "ramnagara",
+    ],
+  },
+  {
+    lang: "ml",
+    keywords: [
+      "kerala",
+      "kochi", "cochin", "ernakulam", "thiruvananthapuram", "trivandrum",
+      "kozhikode", "calicut", "thrissur", "trichur", "kollam", "quilon",
+      "alappuzha", "alleppey", "palakkad", "palghat", "kannur", "cannanore",
+      "malappuram", "kasaragod", "wayanad", "idukki", "pathanamthitta",
+      "kottayam", "munnar", "guruvayur",
+    ],
+  },
+  {
+    lang: "te",
+    keywords: [
+      "andhra pradesh", "telangana",
+      "hyderabad", "secunderabad", "visakhapatnam", "vizag", "vijayawada",
+      "warangal", "guntur", "nellore", "kurnool", "tirupati", "rajahmundry",
+      "kadapa", "kakinada", "anantapur", "nizamabad", "karimnagar", "khammam",
+      "mahbubnagar", "sangareddy", "srikakulam", "eluru", "ongole", "bhimavaram",
+      "nalgonda", "medak", "mahabubabad", "suryapet", "wanaparthy", "rajanna",
+      "mancherial", "nirmal", "adilabad", "komaram bheem", "kumuram bheem",
+    ],
+  },
+  {
+    lang: "mr",
+    keywords: [
+      "maharashtra", "goa",
+      "mumbai", "bombay", "pune", "poona", "nagpur", "nashik", "aurangabad",
+      "solapur", "kolhapur", "thane", "navi mumbai", "amravati", "akola",
+      "jalgaon", "latur", "osmanabad", "nanded", "parbhani", "yavatmal",
+      "sangli", "satara", "ratnagiri", "sindhudurg", "raigad", "beed",
+      "hingoli", "buldhana", "washim", "gondiya", "bhandara", "wardha",
+      "chandrapur", "gadchiroli", "dhule", "nandurbar",
+      "panaji", "mapusa", "margao", "vasco",
+    ],
+  },
+  {
+    lang: "gu",
+    keywords: [
+      "gujarat",
+      "ahmedabad", "surat", "vadodara", "baroda", "rajkot", "bhavnagar",
+      "jamnagar", "junagadh", "gandhinagar", "anand", "navsari", "valsad",
+      "bharuch", "patan", "mehsana", "sabarkantha", "aravalli", "banaskantha",
+      "kutch", "morbi", "surendranagar", "amreli", "botad", "gir somnath",
+      "devbhumi dwarka", "porbandar",
+    ],
+  },
+  {
+    lang: "pa",
+    keywords: [
+      "punjab",
+      "ludhiana", "amritsar", "jalandhar", "patiala", "chandigarh",
+      "bathinda", "mohali", "pathankot", "hoshiarpur", "gurdaspur",
+      "fatehgarh sahib", "faridkot", "firozpur", "mansa", "moga",
+      "rupnagar", "nawanshahr", "sangrur", "tarn taran",
+    ],
+  },
+  {
+    lang: "bn",
+    keywords: [
+      "west bengal", "assam", "tripura",
+      "kolkata", "calcutta", "howrah", "durgapur", "asansol", "siliguri",
+      "bardhaman", "burdwan", "malda", "murshidabad", "nadia", "north 24 parganas",
+      "south 24 parganas", "hooghly", "bankura", "purulia", "birbhum",
+      "jalpaiguri", "cooch behar", "darjeeling",
+      "guwahati", "dibrugarh", "silchar", "jorhat", "tinsukia", "nagaon",
+      "agartala",
+    ],
+  },
+  {
+    lang: "or",
+    keywords: [
+      "odisha", "orissa",
+      "bhubaneswar", "cuttack", "rourkela", "berhampur", "brahmapur",
+      "puri", "sambalpur", "balasore", "baripada", "jharsuguda", "sundargarh",
+      "rayagada", "koraput", "ganjam", "gajapati", "kandhamal", "bolangir",
+      "bargarh", "nuapada", "deogarh", "kendujhar", "keonjhar", "jajpur",
+      "jagatsinghpur", "kendrapara", "boudh", "subarnapur", "sonepur",
+    ],
+  },
+  {
+    lang: "hi",
+    keywords: [
+      "uttar pradesh", "madhya pradesh", "rajasthan", "bihar",
+      "jharkhand", "uttarakhand", "uttaranchal", "himachal pradesh",
+      "haryana", "chhattisgarh", "delhi", "new delhi", "jammu",
+      "jammu and kashmir", "ladakh",
+      "lucknow", "agra", "varanasi", "kanpur", "allahabad", "prayagraj",
+      "meerut", "ghaziabad", "noida", "mathura", "bareilly", "aligarh",
+      "moradabad", "saharanpur", "gorakhpur", "jaunpur", "faizabad", "ayodhya",
+      "bhopal", "indore", "gwalior", "jabalpur", "ujjain", "sagar", "rewa",
+      "jaipur", "jodhpur", "udaipur", "kota", "ajmer", "bikaner", "alwar",
+      "patna", "gaya", "bhagalpur", "muzaffarpur", "purnia",
+      "ranchi", "jamshedpur", "dhanbad", "bokaro",
+      "dehradun", "haridwar", "rishikesh", "roorkee", "haldwani",
+      "shimla", "dharamsala", "manali", "kullu",
+      "gurgaon", "gurugram", "faridabad", "rohtak", "panipat", "karnal",
+      "raipur", "bilaspur", "durg", "bhilai", "korba",
+    ],
+  },
+];
+
+export function getLanguageFromLocation(locationText: string): LangCode {
+  if (!locationText.trim()) return "en";
+  const lower = locationText.toLowerCase();
+  for (const entry of LOCATION_LANG_KEYWORDS) {
+    if (entry.keywords.some((kw) => lower.includes(kw))) {
+      return entry.lang;
+    }
+  }
+  return "en";
+}

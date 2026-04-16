@@ -4,6 +4,7 @@ export interface GeolocationData {
   latitude: number;
   longitude: number;
   locationName: string;
+  state: string | null;
   temperature: number | null;
   humidity: number | null;
   weatherLoaded: boolean;
@@ -18,7 +19,7 @@ interface UseGeolocationReturn {
   detect: () => Promise<GeolocationData | null>;
 }
 
-async function reverseGeocode(lat: number, lon: number): Promise<string> {
+async function reverseGeocode(lat: number, lon: number): Promise<{ locationName: string; state: string | null }> {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
     const res = await fetch(url, {
@@ -37,13 +38,14 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
       };
     };
     const addr = json.address ?? {};
+    const state = addr.state ?? null;
     const parts = [
       addr.county ?? addr.state_district ?? addr.city ?? addr.town ?? addr.village,
-      addr.state,
+      state,
     ].filter(Boolean);
-    return parts.join(", ") || "Unknown Location";
+    return { locationName: parts.join(", ") || "Unknown Location", state };
   } catch {
-    return "Unknown Location";
+    return { locationName: "Unknown Location", state: null };
   }
 }
 
@@ -90,7 +92,7 @@ export function useGeolocation(): UseGeolocationReturn {
 
       const { latitude, longitude } = position.coords;
 
-      const [locationName, weather] = await Promise.all([
+      const [geocode, weather] = await Promise.all([
         reverseGeocode(latitude, longitude),
         fetchWeather(latitude, longitude),
       ]);
@@ -98,7 +100,8 @@ export function useGeolocation(): UseGeolocationReturn {
       const result: GeolocationData = {
         latitude,
         longitude,
-        locationName,
+        locationName: geocode.locationName,
+        state: geocode.state,
         temperature: weather.temperature,
         humidity: weather.humidity,
         weatherLoaded: true,
