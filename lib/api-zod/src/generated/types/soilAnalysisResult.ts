@@ -16,5 +16,13 @@ export interface SoilAnalysisResult {
   soilCorrections: SoilCorrection[];
   explanationEnglish: string;
   explanationTamil: string;
+  /** @nullable */
+  language?: string | null;
+  /** @nullable */
+  languageName?: string | null;
+  /** @nullable */
+  temperature?: number | null;
+  /** @nullable */
+  humidity?: number | null;
   createdAt: string;
 }

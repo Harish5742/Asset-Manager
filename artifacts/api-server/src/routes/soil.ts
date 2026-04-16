@@ -31,6 +31,11 @@ router.post("/soil/analyze", async (req, res): Promise<void> => {
       potassium: input.potassium,
       moisture: input.moisture,
       preferredCrop: input.preferredCrop,
+      language: input.language,
+      temperature: input.temperature,
+      humidity: input.humidity,
+      latitude: input.latitude,
+      longitude: input.longitude,
     });
 
     const [submission] = await db
@@ -46,6 +51,12 @@ router.post("/soil/analyze", async (req, res): Promise<void> => {
         potassium: input.potassium,
         moisture: input.moisture,
         preferredCrop: input.preferredCrop ?? null,
+        language: aiResult.language,
+        languageName: aiResult.languageName,
+        temperature: input.temperature ?? null,
+        humidity: input.humidity ?? null,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
         crops: aiResult.crops,
         fertilizers: aiResult.fertilizers,
         soilCorrections: aiResult.soilCorrections,
@@ -61,6 +72,10 @@ router.post("/soil/analyze", async (req, res): Promise<void> => {
       soilCorrections: aiResult.soilCorrections,
       explanationEnglish: aiResult.explanationEnglish,
       explanationTamil: aiResult.explanationTamil,
+      language: aiResult.language,
+      languageName: aiResult.languageName,
+      temperature: input.temperature ?? null,
+      humidity: input.humidity ?? null,
       createdAt: submission.createdAt.toISOString(),
     });
   } catch (err) {

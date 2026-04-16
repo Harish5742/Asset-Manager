@@ -154,6 +154,19 @@ components:
           type: number
         preferredCrop:
           type: ["string", "null"]
+        language:
+          type: ["string", "null"]
+          description: "BCP 47 language code, e.g. 'ta', 'hi', 'te'. Defaults to 'ta' (Tamil)."
+        temperature:
+          type: ["number", "null"]
+          description: "Current ambient temperature in Celsius from GPS weather data"
+        humidity:
+          type: ["number", "null"]
+          description: "Current relative humidity percentage from GPS weather data"
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
       required:
         - location
         - season
@@ -227,6 +240,14 @@ components:
           type: string
         explanationTamil:
           type: string
+        language:
+          type: ["string", "null"]
+        languageName:
+          type: ["string", "null"]
+        temperature:
+          type: ["number", "null"]
+        humidity:
+          type: ["number", "null"]
         createdAt:
           type: string
       required:

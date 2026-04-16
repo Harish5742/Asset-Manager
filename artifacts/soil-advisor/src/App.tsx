@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout";
 import { ResultProvider } from "@/hooks/use-result-store";
+import { LanguageProvider } from "@/hooks/use-language";
 
 import Home from "@/pages/home";
 import Results from "@/pages/results";
@@ -36,14 +37,16 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ResultProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </ResultProvider>
+      <LanguageProvider>
+        <ResultProvider>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </ResultProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

@@ -40,6 +40,25 @@ export interface SoilInput {
   moisture: number;
   /** @nullable */
   preferredCrop?: string | null;
+  /**
+   * BCP 47 language code, e.g. 'ta', 'hi', 'te'. Defaults to 'ta' (Tamil).
+   * @nullable
+   */
+  language?: string | null;
+  /**
+   * Current ambient temperature in Celsius from GPS weather data
+   * @nullable
+   */
+  temperature?: number | null;
+  /**
+   * Current relative humidity percentage from GPS weather data
+   * @nullable
+   */
+  humidity?: number | null;
+  /** @nullable */
+  latitude?: number | null;
+  /** @nullable */
+  longitude?: number | null;
 }
 
 export interface CropRecommendation {
@@ -67,6 +86,14 @@ export interface SoilAnalysisResult {
   soilCorrections: SoilCorrection[];
   explanationEnglish: string;
   explanationTamil: string;
+  /** @nullable */
+  language?: string | null;
+  /** @nullable */
+  languageName?: string | null;
+  /** @nullable */
+  temperature?: number | null;
+  /** @nullable */
+  humidity?: number | null;
   createdAt: string;
 }
 

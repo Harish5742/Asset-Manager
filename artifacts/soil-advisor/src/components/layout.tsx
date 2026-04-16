@@ -7,13 +7,15 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useLanguage } from "@/hooks/use-language";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { t } = useLanguage();
 
   const navLinks = [
-    { href: "/", label: "New Analysis", icon: Sprout },
-    { href: "/admin", label: "Dashboard", icon: BarChart3 },
+    { href: "/", label: t.navNewAnalysis, icon: Sprout },
+    { href: "/admin", label: t.navDashboard, icon: BarChart3 },
   ];
 
   return (

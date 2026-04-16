@@ -1,5 +1,19 @@
 import { openai } from "@workspace/integrations-openai-ai-server";
 
+export const LANGUAGE_MAP: Record<string, { name: string; nativeName: string }> = {
+  ta: { name: "Tamil", nativeName: "தமிழ்" },
+  hi: { name: "Hindi", nativeName: "हिंदी" },
+  te: { name: "Telugu", nativeName: "తెలుగు" },
+  kn: { name: "Kannada", nativeName: "ಕನ್ನಡ" },
+  ml: { name: "Malayalam", nativeName: "മലയാളം" },
+  bn: { name: "Bengali", nativeName: "বাংলা" },
+  mr: { name: "Marathi", nativeName: "मराठी" },
+  gu: { name: "Gujarati", nativeName: "ગુજરાતી" },
+  pa: { name: "Punjabi", nativeName: "ਪੰਜਾਬੀ" },
+  or: { name: "Odia", nativeName: "ଓଡ଼ିଆ" },
+  en: { name: "English", nativeName: "English" },
+};
+
 interface SoilInput {
   farmerName?: string | null;
   location: string;
@@ -11,6 +25,11 @@ interface SoilInput {
   potassium: number;
   moisture: number;
   preferredCrop?: string | null;
+  language?: string | null;
+  temperature?: number | null;
+  humidity?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface CropRecommendation {
@@ -37,6 +56,8 @@ interface SoilAnalysisAIResult {
   soilCorrections: SoilCorrection[];
   explanationEnglish: string;
   explanationTamil: string;
+  language: string;
+  languageName: string;
 }
 
 function buildRuleBasedContext(input: SoilInput): string {
@@ -82,11 +103,48 @@ function buildRuleBasedContext(input: SoilInput): string {
     rules.push("Moisture level is adequate.");
   }
 
+  if (input.temperature != null) {
+    if (input.temperature > 35) {
+      rules.push(`Current ambient temperature is HIGH (${input.temperature}°C). Heat-tolerant crops are preferred.`);
+    } else if (input.temperature < 15) {
+      rules.push(`Current ambient temperature is LOW (${input.temperature}°C). Cold-tolerant crops are preferred.`);
+    } else {
+      rules.push(`Current ambient temperature is ${input.temperature}°C — moderate, suitable for a wide range of crops.`);
+    }
+  }
+
+  if (input.humidity != null) {
+    if (input.humidity > 80) {
+      rules.push(`Current humidity is HIGH (${input.humidity}%). Watch for fungal disease risk.`);
+    } else if (input.humidity < 30) {
+      rules.push(`Current humidity is LOW (${input.humidity}%). Moisture retention is important.`);
+    }
+  }
+
   return rules.join("\n");
+}
+
+function resolveLanguage(code: string | null | undefined): { code: string; name: string; nativeName: string } {
+  const raw = (code ?? "ta").split("-")[0].toLowerCase();
+  const entry = LANGUAGE_MAP[raw];
+  if (entry) return { code: raw, ...entry };
+  return { code: "ta", ...LANGUAGE_MAP.ta };
 }
 
 export async function analyzeSoil(input: SoilInput): Promise<SoilAnalysisAIResult> {
   const ruleContext = buildRuleBasedContext(input);
+  const lang = resolveLanguage(input.language);
+
+  const localLangInstruction = lang.code === "en"
+    ? `Write both explanationEnglish and explanationTamil in English (farmer does not need a local language version).`
+    : `Write explanationTamil in ${lang.name} (${lang.nativeName}) — use simple, everyday ${lang.name} words that a rural farmer would understand. Write in proper ${lang.name} script.`;
+
+  const envContext = (input.temperature != null || input.humidity != null)
+    ? `\nReal-time environmental data from GPS:
+- Temperature: ${input.temperature != null ? `${input.temperature}°C` : "not available"}
+- Humidity: ${input.humidity != null ? `${input.humidity}%` : "not available"}
+Use this data to improve crop recommendations (heat tolerance, moisture conditions, etc.).`
+    : "";
 
   const prompt = `You are an expert agricultural advisor specializing in Indian smallholder farming. Analyze the following soil data and provide practical recommendations.
 
@@ -99,7 +157,7 @@ SOIL DATA:
 - Phosphorus (P): ${input.phosphorus} kg/ha
 - Potassium (K): ${input.potassium} kg/ha
 - Moisture: ${input.moisture}%
-${input.preferredCrop ? `- Preferred Crop: ${input.preferredCrop}` : ""}
+${input.preferredCrop ? `- Preferred Crop: ${input.preferredCrop}` : ""}${envContext}
 
 RULE-BASED ANALYSIS:
 ${ruleContext}
@@ -119,7 +177,7 @@ Based on this data and common Indian agricultural practices, provide recommendat
     {"amendment": "e.g. Agricultural Lime", "reason": "why it's needed", "dosage": "e.g. 2 tonnes/ha"}
   ],
   "explanationEnglish": "A simple, friendly 3-4 sentence explanation in plain English suitable for a farmer with limited education. Mention the key findings and top recommendation clearly.",
-  "explanationTamil": "A simple, friendly 3-4 sentence explanation in Tamil suitable for a Tamil Nadu farmer. Use simple everyday Tamil words. Mention the key findings and top crop recommendation. Write in clear, readable Tamil script."
+  "explanationTamil": "A simple, friendly 3-4 sentence explanation suitable for a local farmer. ${localLangInstruction}"
 }
 
 Provide exactly 3 crops, at least 2 fertilizers, and soil corrections only if needed (empty array if soil is already healthy). Scores must be between 0-100. Focus on crops suitable for ${input.season} season in India.`;
@@ -145,7 +203,11 @@ Provide exactly 3 crops, at least 2 fertilizers, and soil corrections only if ne
   }
 
   const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-  const result = JSON.parse(cleaned) as SoilAnalysisAIResult;
+  const result = JSON.parse(cleaned) as Omit<SoilAnalysisAIResult, "language" | "languageName">;
 
-  return result;
+  return {
+    ...result,
+    language: lang.code,
+    languageName: `${lang.name} (${lang.nativeName})`,
+  };
 }

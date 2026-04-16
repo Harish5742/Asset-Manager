@@ -30,6 +30,22 @@ export const AnalyzeSoilBody = zod.object({
   potassium: zod.number(),
   moisture: zod.number(),
   preferredCrop: zod.string().nullish(),
+  language: zod
+    .string()
+    .nullish()
+    .describe(
+      "BCP 47 language code, e.g. 'ta', 'hi', 'te'. Defaults to 'ta' (Tamil).",
+    ),
+  temperature: zod
+    .number()
+    .nullish()
+    .describe("Current ambient temperature in Celsius from GPS weather data"),
+  humidity: zod
+    .number()
+    .nullish()
+    .describe("Current relative humidity percentage from GPS weather data"),
+  latitude: zod.number().nullish(),
+  longitude: zod.number().nullish(),
 });
 
 export const AnalyzeSoilResponse = zod.object({
@@ -57,6 +73,10 @@ export const AnalyzeSoilResponse = zod.object({
   ),
   explanationEnglish: zod.string(),
   explanationTamil: zod.string(),
+  language: zod.string().nullish(),
+  languageName: zod.string().nullish(),
+  temperature: zod.number().nullish(),
+  humidity: zod.number().nullish(),
   createdAt: zod.string(),
 });
 
