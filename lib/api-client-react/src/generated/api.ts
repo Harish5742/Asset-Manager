@@ -5,18 +5,30 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  ErrorResponse,
+  HealthStatus,
+  ListSubmissionsParams,
+  SoilAnalysisResult,
+  SoilInput,
+  SoilStats,
+  SubmissionDetail,
+  SubmissionListResponse,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -92,6 +104,351 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Submit soil data and receive AI-powered crop recommendations, fertilizer plans, and soil corrections
+ * @summary Analyze soil and get recommendations
+ */
+export const getAnalyzeSoilUrl = () => {
+  return `/api/soil/analyze`;
+};
+
+export const analyzeSoil = async (
+  soilInput: SoilInput,
+  options?: RequestInit,
+): Promise<SoilAnalysisResult> => {
+  return customFetch<SoilAnalysisResult>(getAnalyzeSoilUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(soilInput),
+  });
+};
+
+export const getAnalyzeSoilMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeSoil>>,
+    TError,
+    { data: BodyType<SoilInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof analyzeSoil>>,
+  TError,
+  { data: BodyType<SoilInput> },
+  TContext
+> => {
+  const mutationKey = ["analyzeSoil"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof analyzeSoil>>,
+    { data: BodyType<SoilInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return analyzeSoil(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AnalyzeSoilMutationResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeSoil>>
+>;
+export type AnalyzeSoilMutationBody = BodyType<SoilInput>;
+export type AnalyzeSoilMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Analyze soil and get recommendations
+ */
+export const useAnalyzeSoil = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeSoil>>,
+    TError,
+    { data: BodyType<SoilInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof analyzeSoil>>,
+  TError,
+  { data: BodyType<SoilInput> },
+  TContext
+> => {
+  return useMutation(getAnalyzeSoilMutationOptions(options));
+};
+
+/**
+ * Returns all farmer submissions with their recommendations
+ * @summary List all soil submissions (admin)
+ */
+export const getListSubmissionsUrl = (params?: ListSubmissionsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/soil/submissions?${stringifiedParams}`
+    : `/api/soil/submissions`;
+};
+
+export const listSubmissions = async (
+  params?: ListSubmissionsParams,
+  options?: RequestInit,
+): Promise<SubmissionListResponse> => {
+  return customFetch<SubmissionListResponse>(getListSubmissionsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSubmissionsQueryKey = (params?: ListSubmissionsParams) => {
+  return [`/api/soil/submissions`, ...(params ? [params] : [])] as const;
+};
+
+export const getListSubmissionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSubmissions>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListSubmissionsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listSubmissions>>> = ({
+    signal,
+  }) => listSubmissions(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSubmissions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSubmissionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSubmissions>>
+>;
+export type ListSubmissionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all soil submissions (admin)
+ */
+
+export function useListSubmissions<
+  TData = Awaited<ReturnType<typeof listSubmissions>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSubmissionsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a single submission
+ */
+export const getGetSubmissionUrl = (id: number) => {
+  return `/api/soil/submissions/${id}`;
+};
+
+export const getSubmission = async (
+  id: number,
+  options?: RequestInit,
+): Promise<SubmissionDetail> => {
+  return customFetch<SubmissionDetail>(getGetSubmissionUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSubmissionQueryKey = (id: number) => {
+  return [`/api/soil/submissions/${id}`] as const;
+};
+
+export const getGetSubmissionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSubmission>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSubmission>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSubmissionQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubmission>>> = ({
+    signal,
+  }) => getSubmission(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSubmission>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSubmissionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSubmission>>
+>;
+export type GetSubmissionQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a single submission
+ */
+
+export function useGetSubmission<
+  TData = Awaited<ReturnType<typeof getSubmission>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSubmission>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSubmissionQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns aggregate statistics for the admin dashboard
+ * @summary Get dashboard stats
+ */
+export const getGetSoilStatsUrl = () => {
+  return `/api/soil/stats`;
+};
+
+export const getSoilStats = async (
+  options?: RequestInit,
+): Promise<SoilStats> => {
+  return customFetch<SoilStats>(getGetSoilStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSoilStatsQueryKey = () => {
+  return [`/api/soil/stats`] as const;
+};
+
+export const getGetSoilStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSoilStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSoilStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSoilStatsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSoilStats>>> = ({
+    signal,
+  }) => getSoilStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSoilStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSoilStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSoilStats>>
+>;
+export type GetSoilStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get dashboard stats
+ */
+
+export function useGetSoilStats<
+  TData = Awaited<ReturnType<typeof getSoilStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSoilStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSoilStatsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

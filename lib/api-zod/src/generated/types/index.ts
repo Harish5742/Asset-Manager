@@ -6,4 +6,19 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./cropRecommendation";
+export * from "./errorResponse";
+export * from "./fertilizerRecommendation";
 export * from "./healthStatus";
+export * from "./listSubmissionsParams";
+export * from "./soilAnalysisResult";
+export * from "./soilCorrection";
+export * from "./soilInput";
+export * from "./soilInputSeason";
+export * from "./soilInputWaterAvailability";
+export * from "./soilStats";
+export * from "./soilStatsSeasonBreakdownItem";
+export * from "./soilStatsTopCropsItem";
+export * from "./submissionDetail";
+export * from "./submissionListResponse";
+export * from "./submissionSummary";

@@ -8,3 +8,136 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type SoilInputSeason =
+  (typeof SoilInputSeason)[keyof typeof SoilInputSeason];
+
+export const SoilInputSeason = {
+  Kharif: "Kharif",
+  Rabi: "Rabi",
+  Summer: "Summer",
+} as const;
+
+export type SoilInputWaterAvailability =
+  (typeof SoilInputWaterAvailability)[keyof typeof SoilInputWaterAvailability];
+
+export const SoilInputWaterAvailability = {
+  Low: "Low",
+  Medium: "Medium",
+  High: "High",
+} as const;
+
+export interface SoilInput {
+  /** @nullable */
+  farmerName?: string | null;
+  location: string;
+  season: SoilInputSeason;
+  waterAvailability: SoilInputWaterAvailability;
+  ph: number;
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  moisture: number;
+  /** @nullable */
+  preferredCrop?: string | null;
+}
+
+export interface CropRecommendation {
+  name: string;
+  score: number;
+  reason: string;
+}
+
+export interface FertilizerRecommendation {
+  name: string;
+  dosage: string;
+  timing: string;
+}
+
+export interface SoilCorrection {
+  amendment: string;
+  reason: string;
+  dosage: string;
+}
+
+export interface SoilAnalysisResult {
+  id: number;
+  crops: CropRecommendation[];
+  fertilizers: FertilizerRecommendation[];
+  soilCorrections: SoilCorrection[];
+  explanationEnglish: string;
+  explanationTamil: string;
+  createdAt: string;
+}
+
+export interface SubmissionSummary {
+  id: number;
+  /** @nullable */
+  farmerName?: string | null;
+  location: string;
+  season: string;
+  ph: number;
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  moisture: number;
+  /** @nullable */
+  topCrop?: string | null;
+  createdAt: string;
+}
+
+export interface SubmissionListResponse {
+  submissions: SubmissionSummary[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface SubmissionDetail {
+  id: number;
+  /** @nullable */
+  farmerName?: string | null;
+  location: string;
+  season: string;
+  waterAvailability: string;
+  ph: number;
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  moisture: number;
+  /** @nullable */
+  preferredCrop?: string | null;
+  crops: CropRecommendation[];
+  fertilizers: FertilizerRecommendation[];
+  soilCorrections: SoilCorrection[];
+  explanationEnglish: string;
+  explanationTamil: string;
+  createdAt: string;
+}
+
+export type SoilStatsTopCropsItem = {
+  crop: string;
+  count: number;
+};
+
+export type SoilStatsSeasonBreakdownItem = {
+  season: string;
+  count: number;
+};
+
+export interface SoilStats {
+  totalSubmissions: number;
+  todaySubmissions: number;
+  topCrops: SoilStatsTopCropsItem[];
+  avgPh: number;
+  seasonBreakdown: SoilStatsSeasonBreakdownItem[];
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type ListSubmissionsParams = {
+  page?: number;
+  limit?: number;
+};

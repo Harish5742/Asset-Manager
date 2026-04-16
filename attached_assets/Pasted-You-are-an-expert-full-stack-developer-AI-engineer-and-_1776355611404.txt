@@ -1,0 +1,97 @@
+You are an expert full-stack developer, AI engineer, and UI/UX designer.
+
+Your task is to build a complete beginner-friendly project step by step.
+
+PROJECT TITLE:
+AI-Powered Soil Health Advisory System for Smallholder Farmers
+
+PROJECT GOAL:
+Build a web application where farmers input soil data and receive:
+
+Crop recommendations
+Fertilizer plans
+Soil correction suggestions
+Explanation in simple English and Tamil
+
+TECH STACK:
+
+Frontend: React (Vite) + Tailwind CSS
+Backend: PHP (REST API)
+Database: MySQL
+AI Integration: OpenAI API (for recommendations + Tamil translation)
+
+CORE FEATURES:
+
+Farmer Input Form:
+Soil pH
+Nitrogen (N)
+Phosphorus (P)
+Potassium (K)
+Moisture (%)
+Location (district name)
+Season (Kharif/Rabi/Summer)
+Water availability (Low/Medium/High)
+Preferred crop (optional)
+Output Display:
+Top 3 crops with suitability score (0–100)
+Fertilizer recommendation (dosage + timing)
+Soil correction (lime/gypsum etc.)
+Explanation in:
+a) Simple English
+b) Tamil (farmer-friendly)
+Admin Dashboard:
+View all farmer inputs
+View generated recommendations
+
+AI LOGIC REQUIREMENTS:
+
+Use rule-based agricultural logic:
+pH < 6 → acidic → recommend lime
+pH > 7.5 → alkaline → recommend gypsum
+Low Nitrogen → urea
+Low Phosphorus → DAP
+Low Potassium → MOP
+Generate realistic crop recommendations based on Indian conditions
+Return structured JSON from AI
+
+PROJECT BUILD INSTRUCTIONS:
+
+First, give COMPLETE folder structure:
+frontend/
+backend/
+database/
+Then build step-by-step:
+STEP 1: React frontend UI (form + result page)
+STEP 2: PHP backend API (handle request)
+STEP 3: OpenAI API integration
+STEP 4: MySQL database schema
+STEP 5: Admin dashboard
+For EACH step:
+Provide full working code
+Add comments explaining code
+Keep it beginner-friendly
+Ensure it runs without errors
+UI REQUIREMENTS:
+Clean modern design
+Proper spacing and alignment
+Card-based result layout
+Mobile responsive
+API FORMAT:
+Return JSON like:
+{
+"crops": [
+{"name": "", "score": 0}
+],
+"fertilizer": [],
+"soil_correction": [],
+"explanation_english": "",
+"explanation_tamil": ""
+}
+
+IMPORTANT RULES:
+
+Do NOT skip steps
+Do NOT give everything at once
+Wait for my confirmation after each step
+Keep code simple and clean
+Avoid unnecessary complexity

@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: soil
+    description: Soil health advisory operations
+  - name: admin
+    description: Admin dashboard operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /soil/analyze:
+    post:
+      operationId: analyzeSoil
+      tags: [soil]
+      summary: Analyze soil and get recommendations
+      description: Submit soil data and receive AI-powered crop recommendations, fertilizer plans, and soil corrections
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SoilInput"
+      responses:
+        "200":
+          description: Soil analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SoilAnalysisResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /soil/submissions:
+    get:
+      operationId: listSubmissions
+      tags: [admin]
+      summary: List all soil submissions (admin)
+      description: Returns all farmer submissions with their recommendations
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of submissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionListResponse"
+
+  /soil/submissions/{id}:
+    get:
+      operationId: getSubmission
+      tags: [admin]
+      summary: Get a single submission
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Submission details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /soil/stats:
+    get:
+      operationId: getSoilStats
+      tags: [admin]
+      summary: Get dashboard stats
+      description: Returns aggregate statistics for the admin dashboard
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SoilStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +129,274 @@ components:
       required:
         - status
 
+    SoilInput:
+      type: object
+      properties:
+        farmerName:
+          type: ["string", "null"]
+        location:
+          type: string
+        season:
+          type: string
+          enum: [Kharif, Rabi, Summer]
+        waterAvailability:
+          type: string
+          enum: [Low, Medium, High]
+        ph:
+          type: number
+        nitrogen:
+          type: number
+        phosphorus:
+          type: number
+        potassium:
+          type: number
+        moisture:
+          type: number
+        preferredCrop:
+          type: ["string", "null"]
+      required:
+        - location
+        - season
+        - waterAvailability
+        - ph
+        - nitrogen
+        - phosphorus
+        - potassium
+        - moisture
+
+    CropRecommendation:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+        reason:
+          type: string
+      required:
+        - name
+        - score
+        - reason
+
+    FertilizerRecommendation:
+      type: object
+      properties:
+        name:
+          type: string
+        dosage:
+          type: string
+        timing:
+          type: string
+      required:
+        - name
+        - dosage
+        - timing
+
+    SoilCorrection:
+      type: object
+      properties:
+        amendment:
+          type: string
+        reason:
+          type: string
+        dosage:
+          type: string
+      required:
+        - amendment
+        - reason
+        - dosage
+
+    SoilAnalysisResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        crops:
+          type: array
+          items:
+            $ref: "#/components/schemas/CropRecommendation"
+        fertilizers:
+          type: array
+          items:
+            $ref: "#/components/schemas/FertilizerRecommendation"
+        soilCorrections:
+          type: array
+          items:
+            $ref: "#/components/schemas/SoilCorrection"
+        explanationEnglish:
+          type: string
+        explanationTamil:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - crops
+        - fertilizers
+        - soilCorrections
+        - explanationEnglish
+        - explanationTamil
+        - createdAt
+
+    SubmissionSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        farmerName:
+          type: ["string", "null"]
+        location:
+          type: string
+        season:
+          type: string
+        ph:
+          type: number
+        nitrogen:
+          type: number
+        phosphorus:
+          type: number
+        potassium:
+          type: number
+        moisture:
+          type: number
+        topCrop:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - location
+        - season
+        - ph
+        - nitrogen
+        - phosphorus
+        - potassium
+        - moisture
+        - createdAt
+
+    SubmissionListResponse:
+      type: object
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubmissionSummary"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - submissions
+        - total
+        - page
+        - limit
+
+    SubmissionDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        farmerName:
+          type: ["string", "null"]
+        location:
+          type: string
+        season:
+          type: string
+        waterAvailability:
+          type: string
+        ph:
+          type: number
+        nitrogen:
+          type: number
+        phosphorus:
+          type: number
+        potassium:
+          type: number
+        moisture:
+          type: number
+        preferredCrop:
+          type: ["string", "null"]
+        crops:
+          type: array
+          items:
+            $ref: "#/components/schemas/CropRecommendation"
+        fertilizers:
+          type: array
+          items:
+            $ref: "#/components/schemas/FertilizerRecommendation"
+        soilCorrections:
+          type: array
+          items:
+            $ref: "#/components/schemas/SoilCorrection"
+        explanationEnglish:
+          type: string
+        explanationTamil:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - location
+        - season
+        - waterAvailability
+        - ph
+        - nitrogen
+        - phosphorus
+        - potassium
+        - moisture
+        - crops
+        - fertilizers
+        - soilCorrections
+        - explanationEnglish
+        - explanationTamil
+        - createdAt
+
+    SoilStats:
+      type: object
+      properties:
+        totalSubmissions:
+          type: integer
+        todaySubmissions:
+          type: integer
+        topCrops:
+          type: array
+          items:
+            type: object
+            properties:
+              crop:
+                type: string
+              count:
+                type: integer
+            required:
+              - crop
+              - count
+        avgPh:
+          type: number
+        seasonBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              season:
+                type: string
+              count:
+                type: integer
+            required:
+              - season
+              - count
+      required:
+        - totalSubmissions
+        - todaySubmissions
+        - topCrops
+        - avgPh
+        - seasonBreakdown
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

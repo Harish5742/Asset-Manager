@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Soil Health Advisor"
+version = "1.0.0"
+id = "artifacts/soil-advisor"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19868
+
+[services.development]
+run = "pnpm --filter @workspace/soil-advisor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/soil-advisor", "run", "build" ]
+publicDir = "artifacts/soil-advisor/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19868"
+BASE_PATH = "/"

@@ -14,3 +14,148 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Submit soil data and receive AI-powered crop recommendations, fertilizer plans, and soil corrections
+ * @summary Analyze soil and get recommendations
+ */
+export const AnalyzeSoilBody = zod.object({
+  farmerName: zod.string().nullish(),
+  location: zod.string(),
+  season: zod.enum(["Kharif", "Rabi", "Summer"]),
+  waterAvailability: zod.enum(["Low", "Medium", "High"]),
+  ph: zod.number(),
+  nitrogen: zod.number(),
+  phosphorus: zod.number(),
+  potassium: zod.number(),
+  moisture: zod.number(),
+  preferredCrop: zod.string().nullish(),
+});
+
+export const AnalyzeSoilResponse = zod.object({
+  id: zod.number(),
+  crops: zod.array(
+    zod.object({
+      name: zod.string(),
+      score: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
+  fertilizers: zod.array(
+    zod.object({
+      name: zod.string(),
+      dosage: zod.string(),
+      timing: zod.string(),
+    }),
+  ),
+  soilCorrections: zod.array(
+    zod.object({
+      amendment: zod.string(),
+      reason: zod.string(),
+      dosage: zod.string(),
+    }),
+  ),
+  explanationEnglish: zod.string(),
+  explanationTamil: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * Returns all farmer submissions with their recommendations
+ * @summary List all soil submissions (admin)
+ */
+export const listSubmissionsQueryPageDefault = 1;
+export const listSubmissionsQueryLimitDefault = 20;
+
+export const ListSubmissionsQueryParams = zod.object({
+  page: zod.coerce.number().default(listSubmissionsQueryPageDefault),
+  limit: zod.coerce.number().default(listSubmissionsQueryLimitDefault),
+});
+
+export const ListSubmissionsResponse = zod.object({
+  submissions: zod.array(
+    zod.object({
+      id: zod.number(),
+      farmerName: zod.string().nullish(),
+      location: zod.string(),
+      season: zod.string(),
+      ph: zod.number(),
+      nitrogen: zod.number(),
+      phosphorus: zod.number(),
+      potassium: zod.number(),
+      moisture: zod.number(),
+      topCrop: zod.string().nullish(),
+      createdAt: zod.string(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Get a single submission
+ */
+export const GetSubmissionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetSubmissionResponse = zod.object({
+  id: zod.number(),
+  farmerName: zod.string().nullish(),
+  location: zod.string(),
+  season: zod.string(),
+  waterAvailability: zod.string(),
+  ph: zod.number(),
+  nitrogen: zod.number(),
+  phosphorus: zod.number(),
+  potassium: zod.number(),
+  moisture: zod.number(),
+  preferredCrop: zod.string().nullish(),
+  crops: zod.array(
+    zod.object({
+      name: zod.string(),
+      score: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
+  fertilizers: zod.array(
+    zod.object({
+      name: zod.string(),
+      dosage: zod.string(),
+      timing: zod.string(),
+    }),
+  ),
+  soilCorrections: zod.array(
+    zod.object({
+      amendment: zod.string(),
+      reason: zod.string(),
+      dosage: zod.string(),
+    }),
+  ),
+  explanationEnglish: zod.string(),
+  explanationTamil: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * Returns aggregate statistics for the admin dashboard
+ * @summary Get dashboard stats
+ */
+export const GetSoilStatsResponse = zod.object({
+  totalSubmissions: zod.number(),
+  todaySubmissions: zod.number(),
+  topCrops: zod.array(
+    zod.object({
+      crop: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  avgPh: zod.number(),
+  seasonBreakdown: zod.array(
+    zod.object({
+      season: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+});
